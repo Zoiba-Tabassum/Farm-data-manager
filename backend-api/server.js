@@ -3,6 +3,7 @@ import express from "express"; // imports express package to create a web server
 import configDotenv from "dotenv"; // imports dotenv package to load environment variables
 import cors from "cors"; // imports cors package to enable Cross-Origin Resource Sharing
 import userRoutes from "./routes/user.js"; // imports user routes for handling user-related requests
+import farmerRoutes from "./routes/farmer.js"; // imports farmer routes for handling farmer-related requests
 import path from "path"; // imports path package to handle file paths
 import { fileURLToPath } from "url";
 
@@ -24,7 +25,7 @@ app.use(express.json()); // parses incoming JSON requests and makes the data ava
 app.use(express.static(path.join(__dirname, "../public")));
 
 app.use("/api/users", userRoutes); // mounts user routes at /api/users
-
+app.use("/api/farmer", farmerRoutes); // mounts addfarmer function at /api/farmer
 //error 404 handler
 app.use((req, res) => {
   res.status(404).send("ERROR 404: NOT FOUND");

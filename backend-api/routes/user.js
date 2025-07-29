@@ -1,13 +1,24 @@
 import express from "express";
-import { getUsers, login, signup } from "../controllers/userController.js";
+import authentication from "../middleware/auth.js";
+import {
+  getAllUsers,
+  login,
+  signup,
+  deleteUser,
+  getUserByUserName,
+  getAllFacilitators,
+  getAllAdmins,
+} from "../controllers/userController.js";
 
 const router = express.Router();
 
 // router.post("/", createUser); // Create user
-router.get("/", getUsers); // Get all users
+router.get("/", authentication("admin"), getAllUsers); // Get all users
 router.post("/login", login); // User login
-router.post("/signup", signup); // User signup
+router.post("/signup", authentication("admin"), signup); // User signup
+router.delete("/delete/:user_name", authentication("admin"), deleteUser); // Delete user by username
+router.get("/getuser/:user_name", authentication("admin"), getUserByUserName); // Get user by username
+router.get("/facilitators", authentication("admin"), getAllFacilitators); // Get all facilitators
+router.get("/admins", authentication("admin"), getAllAdmins); // Get all admins
 
 export default router;
-// // Export the router to be used in the main server file
-// // This file defines the user-related routes for the application

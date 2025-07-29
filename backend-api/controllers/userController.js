@@ -31,6 +31,10 @@ const signup = async (req, res) => {
     console.log("Error during signup:", err);
     res.status(500).json({ error: "Internal server Error" });
   }
+
+  if ((err.code = "ER_DUP_ENTRY")) {
+    return res.status(400).json({ error: "User already exists" }); // If user already exists, return 400
+  }
 };
 
 //--------------------
@@ -79,10 +83,14 @@ const login = async (req, res) => {
 };
 
 //--------------------
+//RESET PASSWORD
+//--------------------
+
+//--------------------
 //GET ALL USERS FUNCTION
 //--------------------
 
-const getUsers = async (req, res) => {
+const getAllUsers = async (req, res) => {
   const query = "SELECT * FROM users"; // SQL query to select all users
 
   try {
@@ -100,8 +108,89 @@ const getUsers = async (req, res) => {
   }
 };
 
-//---------------------
-//ADD FARMER FUNCTION
-//---------------------
+//--------------------
+//GET USER BY user_name
+//--------------------
+const getUserByUserName = async (req, res) => {
+  const { user_name } = req.params;
+  const query = "Select *from user where user_name=?";
 
-export { getUsers, login, signup };
+  try {
+    const [result] = await db.promise().query(query, [user_name]);
+    if (result.length === 0) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.status(200).json({
+      success: true,
+      data: result[0], // Return the first user found
+    });
+  } catch (err) {
+    console.log("Error fetching all userss");
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+//get all facilitators
+const getAllFacilitators = async (req, res) => {
+  const query = "SELECT * FROM users WHERE role = 'facilitator'"; // SQL query to select all facilitators
+  try {
+    const [result] = await db.promise().query(query); // Execute the query
+    if (result.length === 0) {
+      return res.status(404).json({ message: "No facilitators available" }); // If no facilitators found, return 404
+    }
+    res.status(200).json({
+      success: true,
+      data: result,
+    }); // Return the list of facilitators with a 200 status
+  } catch (err) {
+    console.error("Error fetching facilitators:", err); // Log any errors
+    res.status(500).json({ message: "Internal server error" }); // Return a 500 status for server errors
+  }
+};
+
+//get all admins
+const getAllAdmins = async (req, res) => {
+  const query = "SELECT * FROM users WHERE role = 'admin'"; // SQL query to select all admins
+  try {
+    const [result] = await db.promise().query(query); // Execute the query
+    if (result.length === 0) {
+      return res.status(404).json({ message: "No admins available" }); // If no admins found, return 404
+    }
+    res.status(200).json({
+      success: true,
+      data: result,
+    }); // Return the list of admins with a 200 status
+  } catch (err) {
+    console.error("Error fetching admins:", err); // Log any errors
+    res.status(500).json({ message: "Internal server error" }); // Return a 500 status for server errors
+  }
+};
+
+//----------------------
+//DELETE USER
+//---------------------
+const deleteUser = async (req, res) => {
+  const { user_name } = req.params; // Get the user_name from request parameters
+  const query = "DELETE FROM users WHERE user_name = ?"; // SQL query to delete user by user_name
+
+  try {
+    const [result] = await db.promise().query(query, [user_name]); // Execute the query
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: "User not found" }); // If no rows affected, return 404
+    }
+    res.status(200).json({ message: "User deleted successfully" }); // Return success message with 200 status
+  } catch (err) {
+    console.error("Error deleting user:", err); // Log any errors
+    res.status(500).json({ message: "Internal server error" }); // Return a 500 status for server errors
+  }
+};
+
+export {
+  getAllUsers,
+  login,
+  signup,
+  deleteUser,
+  getUserByUserName,
+  getAllFacilitators,
+  getAllAdmins,
+}; // Export the functions for use in routes
