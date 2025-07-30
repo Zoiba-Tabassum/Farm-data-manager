@@ -32,7 +32,7 @@ const signup = async (req, res) => {
     res.status(500).json({ error: "Internal server Error" });
   }
 
-  if ((err.code = "ER_DUP_ENTRY")) {
+  if (err.code === "ER_DUP_ENTRY") {
     return res.status(400).json({ error: "User already exists" }); // If user already exists, return 400
   }
 };
