@@ -4,6 +4,7 @@ const authentication = (...allowedRoles) => {
   return (req, res, next) => {
     const authHeader = req.headers["authorization"];
     const token = authHeader && authHeader.split(" ")[1]; // Extract token from Authorization header
+    console.log("authenticating....");
     if (!token) {
       return res.status(401).json({ error: "Access denied, token missing" }); // If no token, return 401
     }

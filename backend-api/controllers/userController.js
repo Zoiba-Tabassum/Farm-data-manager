@@ -58,8 +58,8 @@ const login = async (req, res) => {
     // Generate JWT token
     const token = jwt.sign(
       {
-        id: user.id,
-        role: user.role,
+        id: user[0].id,
+        role: user[0].role,
       },
       process.env.JWT_SECRET, // Use secret from environment variables
       { expiresIn: process.env.JWT_EXPIRATION } // Token expiration time
@@ -113,7 +113,7 @@ const getAllUsers = async (req, res) => {
 //--------------------
 const getUserByUserName = async (req, res) => {
   const { user_name } = req.params;
-  const query = "Select *from user where user_name=?";
+  const query = "Select *from users where user_name=?";
 
   try {
     const [result] = await db.promise().query(query, [user_name]);

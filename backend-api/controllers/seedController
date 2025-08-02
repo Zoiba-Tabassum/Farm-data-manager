@@ -1,0 +1,117 @@
+import db from "../db/connection.js"; // Use ES module import
+
+// Add seed data
+const addSeedData = async (req, res) => {
+  const { farmer_id, variety_name, acres, seed_per_acre, price_per_kg } =
+    req.body;
+
+  try {
+    const query = `
+      INSERT INTO seed_data (farmer_id, variety_name, acres, seed_per_acre, price_per_kg)
+      VALUES (?, ?, ?, ?, ?)
+    `;
+    await db
+      .promise()
+      .query(query, [
+        farmer_id,
+        variety_name,
+        acres,
+        seed_per_acre,
+        price_per_kg,
+      ]);
+
+    res.status(201).json({ message: "Seed data added successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to add seed data" });
+  }
+};
+
+// Get seed data for a specific farmer
+const getSeedData = async (req, res) => {
+  const { farmer_id } = req.params;
+
+  try {
+    const [rows] = await db
+      .promise()
+      .query("SELECT * FROM seed_data WHERE farmer_id = ?", [farmer_id]);
+
+    if (rows.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "No seed data found for this farmer" });
+    }
+
+    res.status(200).json(rows);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to retrieve seed data" });
+  }
+};
+
+// Get all seed data
+const getAllSeedData = async (req, res) => {
+  try {
+    const [rows] = await db.promise().query("SELECT * FROM seed_data");
+
+    if (rows.length === 0) {
+      return res.status(404).json({ message: "No seed data found" });
+    }
+
+    res.status(200).json(rows);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to retrieve seed data" });
+  }
+};
+
+// Update seed data by ID
+const updateSeedData = async (req, res) => {
+  const { id } = req.params;
+  const { variety_name, acres, seed_per_acre, price_per_kg } = req.body;
+
+  try {
+    const [result] = await db.promise().query(
+      `UPDATE seed_data 
+       SET variety_name = ?, acres = ?, seed_per_acre = ?, price_per_kg = ?
+       WHERE id = ?`,
+      [variety_name, acres, seed_per_acre, price_per_kg, id]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: "Seed data not found" });
+    }
+
+    res.status(200).json({ message: "Seed data updated successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to update seed data" });
+  }
+};
+
+// Delete seed data by ID
+const deleteSeedData = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const [result] = await db
+      .promise()
+      .query("DELETE FROM seed_data WHERE id = ?", [id]);
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: "Seed data not found" });
+    }
+
+    res.status(200).json({ message: "Seed data deleted successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to delete seed data" });
+  }
+};
+
+export default {
+  addSeedData,
+  getAllSeedData,
+  updateSeedData,
+  deleteSeedData,
+}; // Export all functions as an object for use in routes
