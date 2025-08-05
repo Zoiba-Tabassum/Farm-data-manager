@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="css/styles.css" />
+    <link rel="icon" href="img/favicon.ico" type="image/x-icon" />
+  </head>
+
+  <body>
+    <div id="app">
+      <aside id="sidebar">
+        <h2>Dehqan</h2>
+        <nav>
+          <ul>
+            <li><a href="dashboard.html">Dashboard</a></li>
+            <li><a href="farmers.html">Farmers</a></li>
+          </ul>
+        </nav>
+      </aside>
+
+      <main id="main-content">
+        <header>
+          <h1>Dashboard</h1>
+          <div id="role-indicator"></div>
+        </header>
+        <section id="stats-cards">
+          <div class="cards">
+            <p>Total Farmers</p>
+            <h2 id="totallfarmers">0</h2>
+          </div>
+        </section>
+        <section id="charts">
+          <canva id="irrigationChart"></canva>
+          <canva id="yieldChart"></canva>
+        </section>
+      </main>
+    </div>
+
+    <script src="js/dashboard.js" type="module"></script>
+  </body>
+</html>
