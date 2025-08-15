@@ -1,7 +1,7 @@
-import express from "expree";
+import express from "express";
 import authentication from "../middleware/auth.js"; // imports authentication middleware for protecting routes
 import {
-  addWaterUsage,
+  addWaterData,
   getAllWaterData,
   updateWaterData,
   deleteWaterData,
@@ -10,19 +10,15 @@ import {
 
 const router = express.Router(); // creates a new router instance
 
-router.post(
-  "/addwaterusage",
-  authentication("field_facilitator"),
-  addWaterUsage
-); // route to add water usage data, protected by authentication
+router.post("/addwaterdata", authentication("field_facilitator"), addWaterData); // route to add water usage data, protected by authentication
 router.get(
   "/getwaterdata/:farmer_id",
-  authentication(["admin", "field_facilitator"]),
+  authentication("admin", "field_facilitator"),
   getWaterData
 );
 router.get(
   "/getallwaterdata",
-  authentication(["admin", "field_facilitator"]),
+  authentication("admin", "field_facilitator"),
   getAllWaterData
 ); // route to get all water usage data, protected by authentication
 router.put(

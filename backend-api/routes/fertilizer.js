@@ -1,7 +1,7 @@
 import express from "express";
 import authentication from "../middleware/auth.js"; // imports authentication middleware for protecting routes
 import {
-  addFertilizerUsage,
+  addFertilizerData,
   getAllFertilizerData,
   getFertilizerData,
   updateFertilizerData,
@@ -13,16 +13,16 @@ const router = express.Router();
 router.post(
   "/addfertilizerusage",
   authentication("field_facilitator"),
-  addFertilizerUsage
+  addFertilizerData
 );
 router.get(
   "/getfertilizerdata/:farmer_id",
-  authentication(["admin", "field_facilitator"]),
+  authentication("admin", "field_facilitator"),
   getFertilizerData
 ); // route to get fertilizer data by farmer_id, protected by
 router.get(
   "/getallfertilizerdata",
-  authentication(["admin", "field_facilitator"]),
+  authentication("admin", "field_facilitator"),
   getAllFertilizerData
 ); // route to get all fertilizer data, protected by authentication
 router.put(

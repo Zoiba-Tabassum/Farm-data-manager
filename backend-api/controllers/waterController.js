@@ -1,6 +1,6 @@
 import db from "../db/connection.js"; // Use ES module import
 
-// Add new water data entry
+// Add new water data entry (facilitator restricted)
 const addWaterData = async (req, res) => {
   const {
     farmer_id,
@@ -11,7 +11,23 @@ const addWaterData = async (req, res) => {
     cost_per_acre,
   } = req.body;
 
+  const facilitatorId = req.user.id;
+
   try {
+    // Verify that the farmer belongs to this facilitator
+    const [farmerCheck] = await db
+      .promise()
+      .query(`SELECT id FROM farmers WHERE id = ? AND facilitator_id = ?`, [
+        farmer_id,
+        facilitatorId,
+      ]);
+
+    if (farmerCheck.length === 0) {
+      return res
+        .status(403)
+        .json({ error: "Not authorized to add data for this farmer" });
+    }
+
     const query = `
       INSERT INTO water_data (farmer_id, source, irrigation_date, quantity_per_acre, time, cost_per_acre)
       VALUES (?, ?, ?, ?, ?, ?)
@@ -35,14 +51,19 @@ const addWaterData = async (req, res) => {
   }
 };
 
-// Get water data for a specific farmer
+// Get water data for a specific farmer (facilitator restricted)
 const getWaterData = async (req, res) => {
   const { farmer_id } = req.params;
+  const facilitatorId = req.user.id;
 
   try {
-    const [rows] = await db
-      .promise()
-      .query("SELECT * FROM water_data WHERE farmer_id = ?", [farmer_id]);
+    const [rows] = await db.promise().query(
+      `SELECT wd.*
+       FROM water_data wd
+       JOIN farmers f ON wd.farmer_id = f.id
+       WHERE wd.farmer_id = ? AND f.facilitator_id = ?`,
+      [farmer_id, facilitatorId]
+    );
 
     if (rows.length === 0) {
       return res
@@ -57,10 +78,18 @@ const getWaterData = async (req, res) => {
   }
 };
 
-// Get all water data
+// Get all water data for this facilitator
 const getAllWaterData = async (req, res) => {
+  const facilitatorId = req.user.id;
+
   try {
-    const [rows] = await db.promise().query("SELECT * FROM water_data");
+    const [rows] = await db.promise().query(
+      `SELECT wd.*
+       FROM water_data wd
+       JOIN farmers f ON wd.farmer_id = f.id
+       WHERE f.facilitator_id = ?`,
+      [facilitatorId]
+    );
 
     if (rows.length === 0) {
       return res.status(404).json({ message: "No water data found" });
@@ -73,22 +102,34 @@ const getAllWaterData = async (req, res) => {
   }
 };
 
-// Update water data by ID
+// Update water data by ID (facilitator restricted)
 const updateWaterData = async (req, res) => {
   const { id } = req.params;
   const { source, irrigation_date, quantity_per_acre, time, cost_per_acre } =
     req.body;
+  const facilitatorId = req.user.id;
 
   try {
     const [result] = await db.promise().query(
-      `UPDATE water_data
-       SET source = ?, irrigation_date = ?, quantity_per_acre = ?, time = ?, cost_per_acre = ?
-       WHERE id = ?`,
-      [source, irrigation_date, quantity_per_acre, time, cost_per_acre, id]
+      `UPDATE water_data wd
+       JOIN farmers f ON wd.farmer_id = f.id
+       SET wd.source = ?, wd.irrigation_date = ?, wd.quantity_per_acre = ?, wd.time = ?, wd.cost_per_acre = ?
+       WHERE wd.id = ? AND f.facilitator_id = ?`,
+      [
+        source,
+        irrigation_date,
+        quantity_per_acre,
+        time,
+        cost_per_acre,
+        id,
+        facilitatorId,
+      ]
     );
 
     if (result.affectedRows === 0) {
-      return res.status(404).json({ message: "Water data not found" });
+      return res
+        .status(404)
+        .json({ message: "Water data not found or not authorized" });
     }
 
     res.status(200).json({ message: "Water data updated successfully" });
@@ -98,17 +139,23 @@ const updateWaterData = async (req, res) => {
   }
 };
 
-// Delete water data by ID
+// Delete water data by ID (facilitator restricted)
 const deleteWaterData = async (req, res) => {
   const { id } = req.params;
+  const facilitatorId = req.user.id;
 
   try {
-    const [result] = await db
-      .promise()
-      .query("DELETE FROM water_data WHERE id = ?", [id]);
+    const [result] = await db.promise().query(
+      `DELETE wd FROM water_data wd
+       JOIN farmers f ON wd.farmer_id = f.id
+       WHERE wd.id = ? AND f.facilitator_id = ?`,
+      [id, facilitatorId]
+    );
 
     if (result.affectedRows === 0) {
-      return res.status(404).json({ message: "Water data not found" });
+      return res
+        .status(404)
+        .json({ message: "Water data not found or not authorized" });
     }
 
     res.status(200).json({ message: "Water data deleted successfully" });
@@ -118,7 +165,7 @@ const deleteWaterData = async (req, res) => {
   }
 };
 
-export default {
+export {
   addWaterData,
   getWaterData,
   getAllWaterData,

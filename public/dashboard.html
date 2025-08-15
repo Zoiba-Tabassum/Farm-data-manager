@@ -2,42 +2,291 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Dashboard</title>
-    <link rel="stylesheet" href="css/styles.css" />
-    <link rel="icon" href="img/favicon.ico" type="image/x-icon" />
+    <title>DEHQAN - Dashboard</title>
+    <link href="./style.css" rel="stylesheet" />
+    <link rel="icon" href="./img/favicon.ico" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
   </head>
-
-  <body>
-    <div id="app">
-      <aside id="sidebar">
-        <h2>Dehqan</h2>
-        <nav>
-          <ul>
-            <li><a href="dashboard.html">Dashboard</a></li>
-            <li><a href="farmers.html">Farmers</a></li>
-          </ul>
+  <body
+    class="min-h-screen flex justify-center items-start bg-gradient-to-br from-[#74b585] via-[#f9f9f9] to-[#74b585] p-4"
+  >
+    <div
+      class="flex flex-col md:flex-row w-full max-w-7xl rounded-2xl shadow-xl bg-white/10 backdrop-blur-lg border border-white/30 overflow-hidden"
+    >
+      <!-- Sidebar -->
+      <aside
+        id="sidebar"
+  class="w-full md:w-64 bg-[#2c6642]/90 text-white p-6 md:sticky md:top-0 h-full min-h-screen md:block hidden z-20"
+      >
+        <div class="flex flex-col items-center justify-center mb-10 space-y-4">
+          <img
+            src="./img/logo.png"
+            alt="Dehqan Logo"
+            class="brightness-150 w-36 shadow-sm"
+          />
+          <nav class="flex flex-col space-y-3 w-full text-center p-4">
+            <a
+              href="#" data-section="farmers"
+              class="flex items-center gap-2 text-white hover:text-[#74b585] font-semibold p-2"
+              ><i data-lucide="users"></i>Farmers</a
+            >
+            <a
+              href="#" data-section="assets"
+              class="flex items-center gap-2 text-white hover:text-[#74b585] font-semibold p-2"
+              ><i data-lucide="package"></i>Assets</a
+            >
+            <a
+              href="#" data-section="land-preparation"
+              class="flex items-center gap-2 text-white hover:text-[#74b585] font-semibold p-2"
+              ><i data-lucide="tractor"></i> Land Preparation</a
+            >
+            <a
+              href="#" data-section="irrigation"
+              class="flex items-center gap-2 text-white hover:text-[#74b585] font-semibold p-2"
+            >
+              <i data-lucide="sprout"></i>Seed Data</a
+            >
+            <a
+              href="#" data-section="water-usage"
+              class="flex items-center gap-2 text-white hover:text-[#74b585] font-semibold p-2"
+            >
+              <i data-lucide="droplet"></i>Water Usage</a
+            >
+            <a
+              href="#" data-section="pesticide"
+              class="flex items-center gap-2 text-white hover:text-[#74b585] font-semibold p-2"
+              ><i data-lucide="bug-off"></i>Pesticide</a
+            >
+            <a
+              href="#"
+              class="flex items-center gap-2 text-white hover:text-[#74b585] font-semibold p-2"
+            >
+              <i data-lucide="flask-round"></i>Fertilizer</a
+            >
+            <a
+              href="#" data-section="cotton-picking"
+              class="flex items-center gap-2 text-white hover:text-[#74b585] font-semibold p-2"
+              ><i data-lucide="crop"></i>Cotton Picking</a
+            >
+          </nav>
+          <!-- Close button on mobile -->
+          <button
+            class="md:hidden text-white text-2xl"
+            onclick="toggleSidebar()"
+          >
+            ✖
+          </button>
+        </div>
+        <nav class="space-y-4">
+          <a href="#" class="block hover:text-yellow-300 hidden"
+            >Manage Farmers</a
+          >
+          <a href="#" class="block hover:text-yellow-300 hidden">Weather</a>
+          <button
+            onclick="logout()"
+            class="mt-6 w-full border border-white py-2 px-3 rounded hover:bg-[#74b585] hover:text-[#2c6642] transition font-medium"
+          >
+            LOGOUT
+          </button>
         </nav>
       </aside>
-
-      <main id="main-content">
-        <header>
-          <h1>Dashboard</h1>
-          <div id="role-indicator"></div>
+      <!-- Main Content -->
+      <main class="flex-1 p-6 space-y-6">
+        <!-- Mobile Toggle Button -->
+        <button
+          class="md:hidden mb-4 px-4 py-2 bg-[#2c6642] text-white rounded"
+          onclick="toggleSidebar()"
+        >
+          ☰ Menu
+        </button>
+        <!-- Header -->
+        <header class="flex justify-between items-center">
+          <h1 class="text-2xl font-bold text-[#2c6642]">Dashboard</h1>
+          <div id="roleDisplay" class="text-gray-600 font-medium text-md"></div>
         </header>
-        <section id="stats-cards">
-          <div class="cards">
-            <p>Total Farmers</p>
-            <h2 id="totallfarmers">0</h2>
+        <!-- Dashboard Cards  Admin-->
+        <div
+          id="adminCards"
+          class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 hidden"
+        >
+          <div
+            class="bg-white/40 backdrop-blur-lg rounded-xl shadow-md p-4 border border-white/20"
+          >
+            <h2 class="text-sm font-medium text-[#5c5c5c]">
+              Total Facilitators
+            </h2>
+           <p id="adminFacilitatorCount" class="text-2xl font-bold text-[#2c6642]">--</p>
+
           </div>
-        </section>
-        <section id="charts">
-          <canva id="irrigationChart"></canva>
-          <canva id="yieldChart"></canva>
-        </section>
+          <div
+            class="bg-white/40 backdrop-blur-lg rounded-xl shadow-md p-4 border border-white/20"
+          >
+            <h2 class="text-sm font-medium text-[#5c5c5c]">Total Farmers</h2>
+<p id="adminFarmerCount" class="text-2xl font-bold text-[#2c6642]">--</p>
+          </div>
+          <div
+            class="bg-white/40 backdrop-blur-lg rounded-xl shadow-md p-4 border border-white/20"
+          >
+            <h2 class="text-sm font-medium text-[#5c5c5c]">Total Cotton Revenue (PKR)</h2>
+<p id="admincottonrevenue" class="text-2xl font-bold text-[#2c6642]">--</p>
+          </div>
+           <div
+            class="bg-white/40 backdrop-blur-lg rounded-xl shadow-md p-4 border border-white/20"
+          >
+            <h2 class="text-sm font-medium text-[#5c5c5c]">Total Managed Area (Acre)</h2>
+<p id="adminmanagedarea" class="text-2xl font-bold text-[#2c6642]">--</p>
+              --
+            </p>
+          </div>
+        </div>
+        <!-- Dashboard Cards  Facilitator-->
+        <div
+          id="facilitatorCards"
+          class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 hidden"
+        >
+          <div
+            class="bg-white/40 backdrop-blur-lg rounded-xl shadow-md p-4 border border-white/20"
+          >
+            <h2 class="text-sm font-medium text-[#5c5c5c]">Total Managed Area</h2>
+<p id="facilitatormanagedarea" class="text-2xl font-bold text-[#2c6642]">--</p>
+            
+            </p>
+          </div>
+           <div
+            class="bg-white/40 backdrop-blur-lg rounded-xl shadow-md p-4 border border-white/20"
+          >
+            <h2 class="text-sm font-medium text-[#5c5c5c]">Total Irrigation Quantity</h2>
+<p id="facilitatorirrigation" class="text-2xl font-bold text-[#2c6642]">--</p>
+              
+            </p>
+          </div>
+          <div
+            class="bg-white/40 backdrop-blur-lg rounded-xl shadow-md p-4 border border-white/20"
+          >
+            <h2 class="text-sm font-medium text-[#5c5c5c]">Number of Irrigation Events</h2>
+<p id="facilitatorirrigationevents" class="text-2xl font-bold text-[#2c6642]">--</p>
+          </div>
+           <div
+            class="bg-white/40 backdrop-blur-lg rounded-xl shadow-md p-4 border border-white/20"
+          >
+            <h2 class="text-sm font-medium text-[#5c5c5c]">Total Farmers</h2>
+<p id="facilitatorfarmercount" class="text-2xl font-bold text-[#2c6642]">--</p>
+          </div>
+         
+        </div>
+        <!-- Admin Graphs -->
+        <div
+          id="adminCharts"
+          class="grid grid-cols-1 md:grid-cols-2 gap-6 hidden"
+        >
+          <div
+            class="bg-white/40 backdrop-blur-lg rounded-xl shadow p-6 border border-white/20"
+          >
+            <h3 class="text-lg font-semibold text-[#2c6642] mb-3">
+              Farmers per Facilitator
+            </h3>
+            <div class="h-64"><canvas id="farmersBarChart"></canvas></div>
+          </div>
+          <div
+            class="bg-white/40 backdrop-blur-lg rounded-xl shadow p-6 border border-white/20"
+          >
+            <h3 class="text-lg font-semibold text-[#2c6642] mb-3">
+              Area Managed per Facilitator
+            </h3>
+            <div class="h-64"><canvas id="areaBarChart"></canvas></div>
+          </div>
+         <div class="md:col-span-2 grid grid-cols-4 gap-4">
+  <!-- Chart (75%) -->
+  <div class="col-span-3 bg-white/40 backdrop-blur-lg rounded-xl shadow p-6 border border-white/20">
+    <h3 class="text-lg font-semibold text-[#2c6642] mb-3">
+      Cotton Revenue vs Cost
+    </h3>
+    <div class="h-64"><canvas id="cottonLineChart"></canvas></div>
+  </div>
+
+  <!-- Table (25%) -->
+  <div class="col-span-1 bg-white/40 backdrop-blur-lg rounded-xl shadow p-6 border border-white/20">
+    <h3 class="text-lg font-semibold text-[#2c6642] mb-3">
+      Seasonal Activities
+    </h3>
+    <table class="w-full text-sm text-left">
+      <thead>
+        <tr>
+          <th class="border-b border-gray-300 pb-2">Month</th>
+          <th class="border-b border-gray-300 pb-2">Key Activity</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td class="py-1 font-bold">April–June</td><td>Planting phase</td></tr>
+        <tr><td class="py-1 font-bold">June–August</td><td>Vegetative growth and boll formation</td></tr>
+        <tr><td class="py-1 font-bold">September–November</td><td>Peak harvesting and ginning</td></tr>
+        <tr><td class="py-1 font-bold">December–February</td><td>Post-harvest processing and trade</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+        </div>
+        <!-- Facilitator Graphs -->
+        <div
+          id="facilitatorCharts"
+          class="grid grid-cols-1 md:grid-cols-2 gap-6 hidden"
+        >
+          <div
+            class="bg-white/40 backdrop-blur-lg rounded-xl shadow p-6 border border-white/20"
+          >
+            <h3 class="text-lg font-semibold text-[#2c6642] mb-3">
+              Farm Area per Farmer
+            </h3>
+            <div class="h-64"><canvas id="areaPerFarmerBar"></canvas></div>
+          </div>
+          <div
+            class="bg-white/40 backdrop-blur-lg rounded-xl shadow p-6 border border-white/20"
+          >
+            <h3 class="text-lg font-semibold text-[#2c6642] mb-3">
+              Livestock Distribution
+            </h3>
+            <div class="h-64"><canvas id="livestockBarChart"></canvas></div>
+          </div>
+          <div class="md:col-span-2 grid grid-cols-4 gap-4">
+  <!-- Chart (75%) -->
+  <div class="col-span-3 bg-white/40 backdrop-blur-lg rounded-xl shadow p-6 border border-white/20">
+    <h3 class="text-lg font-semibold text-[#2c6642] mb-3">
+      Irrigation Activities
+    </h3>
+    <div class="h-64"><canvas id="irrigationLineChart"></canvas></div>
+  </div>
+
+  <!-- Table (25%) -->
+  <div class="col-span-1 bg-white/40 backdrop-blur-lg rounded-xl shadow p-6 border border-white/20">
+    <h3 class="text-lg font-semibold text-[#2c6642] mb-3">
+      Seasonal Activities
+    </h3>
+    <table class="w-full text-sm text-left">
+      <thead>
+        <tr>
+          <th class="border-b border-gray-300 pb-2">Month</th>
+          <th class="border-b border-gray-300 pb-2">Key Activity</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td class="py-1 font-bold">April–June</td><td>Planting phase</td></tr>
+        <tr><td class="py-1 font-bold">June–August</td><td>Vegetative growth and boll formation</td></tr>
+        <tr><td class="py-1 font-bold">September–November</td><td>Peak harvesting and ginning</td></tr>
+        <tr><td class="py-1 font-bold">December–February</td><td>Post-harvest processing and trade</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+        </div>
       </main>
     </div>
-
-    <script src="js/dashboard.js" type="module"></script>
+    <script src="./js/dashboard.js"></script>
+    <script>
+      lucide.createIcons();
+    </script>
   </body>
 </html>

@@ -1,15 +1,35 @@
 import db from "../db/connection.js"; // Use ES module import
 
+// Helper to check facilitator access
+const checkFarmerOwnership = async (farmer_id, user) => {
+  if (user.role === "admin") return true;
+
+  const [rows] = await db
+    .promise()
+    .query("SELECT 1 FROM farmers WHERE id = ? AND facilitator_id = ?", [
+      farmer_id,
+      user.id,
+    ]);
+  return rows.length > 0;
+};
+
 const addAssets = async (req, res) => {
   const { farmer_id, area_acres, soil_type, irrigation_type, livestock } =
     req.body;
-
-  const connection = await db.promise().getConnection(); // optional for transaction
+  const user = req.user;
 
   try {
+    // Access control
+    const allowed = await checkFarmerOwnership(farmer_id, user);
+    if (!allowed) {
+      return res
+        .status(403)
+        .json({ error: "Not authorized to modify this farmer" });
+    }
+
+    const connection = await db.promise().getConnection();
     await connection.beginTransaction();
 
-    // Insert into farm_data (replace to avoid UNIQUE constraint error)
     const farmQuery = `
       INSERT INTO farm_data (farmer_id, area_acres, soil_type, irrigation_type)
       VALUES (?, ?, ?, ?)
@@ -25,7 +45,6 @@ const addAssets = async (req, res) => {
       irrigation_type,
     ]);
 
-    // Insert livestock entries
     if (Array.isArray(livestock)) {
       for (const animal of livestock) {
         const livestockQuery = `
@@ -45,26 +64,31 @@ const addAssets = async (req, res) => {
     }
 
     await connection.commit();
+    connection.release();
+
     res.status(200).json({ message: "Assets added successfully" });
   } catch (error) {
-    await connection.rollback();
     console.error(error);
     res.status(500).json({ error: "Failed to add assets" });
-  } finally {
-    connection.release();
   }
 };
 
 const getAssets = async (req, res) => {
   const { farmer_id } = req.params;
+  const user = req.user;
 
   try {
-    // Get farm_data
+    const allowed = await checkFarmerOwnership(farmer_id, user);
+    if (!allowed) {
+      return res
+        .status(403)
+        .json({ error: "Not authorized to view this farmer" });
+    }
+
     const [farmRows] = await db
       .promise()
       .query("SELECT * FROM farm_data WHERE farmer_id = ?", [farmer_id]);
 
-    // Get livestock
     const [livestockRows] = await db
       .promise()
       .query("SELECT * FROM livestock WHERE farmer_id = ?", [farmer_id]);
@@ -86,32 +110,41 @@ const getAssets = async (req, res) => {
 };
 
 const getAllAssets = async (req, res) => {
+  const user = req.user;
+
   try {
-    const [farmRows] = await db.promise().query("SELECT * FROM farm_data");
-    const [livestockRows] = await db.promise().query("SELECT * FROM livestock");
+    let farmQuery = "SELECT * FROM farm_data";
+    let livestockQuery = "SELECT * FROM livestock";
+    let params = [];
+
+    if (user.role === "field_facilitator") {
+      farmQuery = `
+        SELECT fd.* FROM farm_data fd
+        JOIN farmers f ON f.id = fd.farmer_id
+        WHERE f.facilitator_id = ?
+      `;
+      livestockQuery = `
+        SELECT l.* FROM livestock l
+        JOIN farmers f ON f.id = l.farmer_id
+        WHERE f.facilitator_id = ?
+      `;
+      params = [user.id];
+    }
+
+    const [farmRows] = await db.promise().query(farmQuery, params);
+    const [livestockRows] = await db.promise().query(livestockQuery, params);
 
     if (farmRows.length === 0 && livestockRows.length === 0) {
       return res.status(404).json({ message: "No assets found" });
     }
 
-    // Combine assets per farmer
     const farmerMap = {};
-
-    // Add farm_data
     for (const farm of farmRows) {
-      farmerMap[farm.farmer_id] = {
-        farm_data: farm,
-        livestock: [],
-      };
+      farmerMap[farm.farmer_id] = { farm_data: farm, livestock: [] };
     }
-
-    // Add livestock
     for (const animal of livestockRows) {
       if (!farmerMap[animal.farmer_id]) {
-        farmerMap[animal.farmer_id] = {
-          farm_data: null,
-          livestock: [],
-        };
+        farmerMap[animal.farmer_id] = { farm_data: null, livestock: [] };
       }
       farmerMap[animal.farmer_id].livestock.push(animal);
     }
@@ -126,13 +159,19 @@ const getAllAssets = async (req, res) => {
 const updateAssets = async (req, res) => {
   const { farmer_id } = req.params;
   const { area_acres, soil_type, irrigation_type, livestock } = req.body;
-
-  const connection = await db.promise().getConnection();
+  const user = req.user;
 
   try {
+    const allowed = await checkFarmerOwnership(farmer_id, user);
+    if (!allowed) {
+      return res
+        .status(403)
+        .json({ error: "Not authorized to update this farmer" });
+    }
+
+    const connection = await db.promise().getConnection();
     await connection.beginTransaction();
 
-    // Update farm_data (if exists, otherwise ignore)
     await connection.query(
       `UPDATE farm_data
        SET area_acres = ?, soil_type = ?, irrigation_type = ?
@@ -141,12 +180,10 @@ const updateAssets = async (req, res) => {
     );
 
     if (Array.isArray(livestock)) {
-      // Optional: delete old livestock records
       await connection.query(`DELETE FROM livestock WHERE farmer_id = ?`, [
         farmer_id,
       ]);
 
-      // Insert new livestock entries
       for (const animal of livestock) {
         await connection.query(
           `INSERT INTO livestock (farmer_id, animal_type, quantity, shelter, clean_water, trained, vaccinated)
@@ -165,42 +202,44 @@ const updateAssets = async (req, res) => {
     }
 
     await connection.commit();
+    connection.release();
+
     res.status(200).json({ message: "Assets updated successfully" });
   } catch (error) {
-    await connection.rollback();
     console.error(error);
     res.status(500).json({ error: "Failed to update assets" });
-  } finally {
-    connection.release();
   }
 };
 
 const deleteAssets = async (req, res) => {
   const { farmer_id } = req.params;
-
-  const connection = await db.promise().getConnection();
+  const user = req.user;
 
   try {
+    const allowed = await checkFarmerOwnership(farmer_id, user);
+    if (!allowed) {
+      return res
+        .status(403)
+        .json({ error: "Not authorized to delete this farmer" });
+    }
+
+    const connection = await db.promise().getConnection();
     await connection.beginTransaction();
 
-    // Delete livestock first (due to foreign key)
     await connection.query(`DELETE FROM livestock WHERE farmer_id = ?`, [
       farmer_id,
     ]);
-
-    // Then delete farm_data
     await connection.query(`DELETE FROM farm_data WHERE farmer_id = ?`, [
       farmer_id,
     ]);
 
     await connection.commit();
+    connection.release();
+
     res.status(200).json({ message: "Assets deleted successfully" });
   } catch (error) {
-    await connection.rollback();
     console.error(error);
     res.status(500).json({ error: "Failed to delete assets" });
-  } finally {
-    connection.release();
   }
 };
 

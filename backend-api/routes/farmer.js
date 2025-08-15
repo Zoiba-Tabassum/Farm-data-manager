@@ -13,7 +13,7 @@ const router = express.Router();
 router.post("/addfarmer", authentication("field_facilitator"), addfarmer); // Add farmer (protected route, requires authentication)
 router.get(
   "/getfarmer/:code",
-  authentication(["admin", "field_facilitator"]),
+  authentication("admin", "field_facilitator"),
   getfarmer
 ); // Get farmer by code
 router.delete(
@@ -28,7 +28,7 @@ router.put(
 ); // Update farmer by code
 router.get(
   "/getallfarmers",
-  authentication(["admin", "field_facilitator"]),
+  authentication("admin", "field_facilitator"),
   getallfarmers
 ); // Get all farmers
 

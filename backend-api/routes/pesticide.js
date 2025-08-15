@@ -16,12 +16,12 @@ router.post(
 ); // route to add pesticide usage data, protected by authentication
 router.get(
   "/getpesticideusage/:id",
-  authentication(["admin", "field_facilitator"]),
+  authentication("admin", "field_facilitator"),
   getPesticideUsage
 ); // route to get pesticide usage data by ID, protected by authentication
 router.get(
   "/getallpesticideusage",
-  authentication(["admin", "field_facilitator"]),
+  authentication("admin", "field_facilitator"),
   getAllPesticideUsage
 ); // route to get all pesticide usage data, protected by authentication
 router.put(

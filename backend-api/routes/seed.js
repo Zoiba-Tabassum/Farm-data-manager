@@ -26,7 +26,7 @@ router.put(
 ); // route to update seed data by id, protected by authentication
 router.get(
   "/getallseeddata",
-  authentication(["admin", "field_facilitator"]),
+  authentication("admin", "field_facilitator"),
   getAllSeedData
 ); // route to get all seed data, protected by authentication
 

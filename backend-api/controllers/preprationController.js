@@ -1,10 +1,25 @@
 import db from "../db/connection.js"; // Use ES module import for database connection
 
-// Add new land preparation record
+// Add new land preparation record (facilitator can only add for their own farmers)
 const addLandPreparation = async (req, res) => {
   const { farmer_id, factor, cost_per_acre } = req.body;
+  const facilitatorId = req.user.id; // from auth middleware
 
   try {
+    // Verify farmer belongs to facilitator
+    const [farmerCheck] = await db
+      .promise()
+      .query(`SELECT id FROM farmers WHERE id = ? AND facilitator_id = ?`, [
+        farmer_id,
+        facilitatorId,
+      ]);
+
+    if (farmerCheck.length === 0) {
+      return res
+        .status(403)
+        .json({ error: "Not authorized to add data for this farmer" });
+    }
+
     const [result] = await db.promise().query(
       `INSERT INTO land_preparation (farmer_id, factor, cost_per_acre)
        VALUES (?, ?, ?)`,
@@ -20,10 +35,18 @@ const addLandPreparation = async (req, res) => {
   }
 };
 
-// Get all land preparation records
+// Get all land preparation records for this facilitator
 const getAllLandPreparation = async (req, res) => {
+  const facilitatorId = req.user.id;
+
   try {
-    const [rows] = await db.promise().query("SELECT * FROM land_preparation");
+    const [rows] = await db.promise().query(
+      `SELECT lp.* 
+       FROM land_preparation lp
+       JOIN farmers f ON lp.farmer_id = f.id
+       WHERE f.facilitator_id = ?`,
+      [facilitatorId]
+    );
 
     if (rows.length === 0) {
       return res
@@ -38,14 +61,19 @@ const getAllLandPreparation = async (req, res) => {
   }
 };
 
-// Get land preparation records by farmer_id
+// Get land preparation records by farmer_id (facilitator restricted)
 const getLandPreparation = async (req, res) => {
   const { farmer_id } = req.params;
+  const facilitatorId = req.user.id;
 
   try {
-    const [rows] = await db
-      .promise()
-      .query("SELECT * FROM land_preparation WHERE farmer_id = ?", [farmer_id]);
+    const [rows] = await db.promise().query(
+      `SELECT lp.* 
+       FROM land_preparation lp
+       JOIN farmers f ON lp.farmer_id = f.id
+       WHERE lp.farmer_id = ? AND f.facilitator_id = ?`,
+      [farmer_id, facilitatorId]
+    );
 
     if (rows.length === 0) {
       return res
@@ -60,23 +88,25 @@ const getLandPreparation = async (req, res) => {
   }
 };
 
-// Update a specific land preparation record by ID
+// Update a specific land preparation record by ID (facilitator restricted)
 const updateLandPreparation = async (req, res) => {
   const { id } = req.params;
   const { factor, cost_per_acre } = req.body;
+  const facilitatorId = req.user.id;
 
   try {
     const [result] = await db.promise().query(
-      `UPDATE land_preparation
-       SET factor = ?, cost_per_acre = ?
-       WHERE id = ?`,
-      [factor, cost_per_acre, id]
+      `UPDATE land_preparation lp
+       JOIN farmers f ON lp.farmer_id = f.id
+       SET lp.factor = ?, lp.cost_per_acre = ?
+       WHERE lp.id = ? AND f.facilitator_id = ?`,
+      [factor, cost_per_acre, id, facilitatorId]
     );
 
     if (result.affectedRows === 0) {
       return res
         .status(404)
-        .json({ message: "Land preparation record not found" });
+        .json({ message: "Record not found or not authorized" });
     }
 
     res.status(200).json({ message: "Land preparation record updated" });
@@ -86,19 +116,23 @@ const updateLandPreparation = async (req, res) => {
   }
 };
 
-// Delete a land preparation record by ID
+// Delete a land preparation record by ID (facilitator restricted)
 const deleteLandPreparation = async (req, res) => {
   const { id } = req.params;
+  const facilitatorId = req.user.id;
 
   try {
-    const [result] = await db
-      .promise()
-      .query("DELETE FROM land_preparation WHERE id = ?", [id]);
+    const [result] = await db.promise().query(
+      `DELETE lp FROM land_preparation lp
+       JOIN farmers f ON lp.farmer_id = f.id
+       WHERE lp.id = ? AND f.facilitator_id = ?`,
+      [id, facilitatorId]
+    );
 
     if (result.affectedRows === 0) {
       return res
         .status(404)
-        .json({ message: "Land preparation record not found" });
+        .json({ message: "Record not found or not authorized" });
     }
 
     res.status(200).json({ message: "Land preparation record deleted" });
@@ -108,7 +142,7 @@ const deleteLandPreparation = async (req, res) => {
   }
 };
 
-module.exports = {
+export {
   addLandPreparation,
   getAllLandPreparation,
   getLandPreparation,

@@ -1,4 +1,4 @@
-import db from "../db/connection.js"; // Use ES module import
+import db from "../db/connection.js";
 
 // Add cotton picking record
 const addCottonPicking = async (req, res) => {
@@ -11,25 +11,29 @@ const addCottonPicking = async (req, res) => {
     total_cost,
     buyer_name,
   } = req.body;
+  const facilitatorId = req.user.id; // facilitator's user ID from auth
 
   try {
-    const query = `
-      INSERT INTO cotton_picking 
-      (farmer_id, average, total, rate, total_earning, total_cost, buyer_name)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
-    `;
-
-    await db
+    // Verify farmer belongs to facilitator
+    const [farmerCheck] = await db
       .promise()
-      .query(query, [
+      .query(`SELECT id FROM farmers WHERE id = ? AND facilitator_id = ?`, [
         farmer_id,
-        average,
-        total,
-        rate,
-        total_earning,
-        total_cost,
-        buyer_name,
+        facilitatorId,
       ]);
+
+    if (farmerCheck.length === 0) {
+      return res
+        .status(403)
+        .json({ error: "You are not allowed to add data for this farmer" });
+    }
+
+    await db.promise().query(
+      `INSERT INTO cotton_picking 
+       (farmer_id, average, total, rate, total_earning, total_cost, buyer_name)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [farmer_id, average, total, rate, total_earning, total_cost, buyer_name]
+    );
 
     res
       .status(201)
@@ -43,11 +47,16 @@ const addCottonPicking = async (req, res) => {
 // Get cotton picking records for a specific farmer
 const getCottonPicking = async (req, res) => {
   const { farmer_id } = req.params;
+  const facilitatorId = req.user.id;
 
   try {
-    const [rows] = await db
-      .promise()
-      .query("SELECT * FROM cotton_picking WHERE farmer_id = ?", [farmer_id]);
+    const [rows] = await db.promise().query(
+      `SELECT cp.* 
+       FROM cotton_picking cp
+       JOIN farmers f ON cp.farmer_id = f.id
+       WHERE cp.farmer_id = ? AND f.facilitator_id = ?`,
+      [farmer_id, facilitatorId]
+    );
 
     if (rows.length === 0) {
       return res
@@ -64,10 +73,18 @@ const getCottonPicking = async (req, res) => {
   }
 };
 
-// Get all cotton picking records
+// Get all cotton picking records for this facilitator
 const getAllCottonPicking = async (req, res) => {
+  const facilitatorId = req.user.id;
+
   try {
-    const [rows] = await db.promise().query("SELECT * FROM cotton_picking");
+    const [rows] = await db.promise().query(
+      `SELECT cp.* 
+       FROM cotton_picking cp
+       JOIN farmers f ON cp.farmer_id = f.id
+       WHERE f.facilitator_id = ?`,
+      [facilitatorId]
+    );
 
     if (rows.length === 0) {
       return res
@@ -89,21 +106,30 @@ const updateCottonPicking = async (req, res) => {
   const { id } = req.params;
   const { average, total, rate, total_earning, total_cost, buyer_name } =
     req.body;
+  const facilitatorId = req.user.id;
 
   try {
     const [result] = await db.promise().query(
-      `
-      UPDATE cotton_picking
-      SET average = ?, total = ?, rate = ?, total_earning = ?, total_cost = ?, buyer_name = ?
-      WHERE id = ?
-      `,
-      [average, total, rate, total_earning, total_cost, buyer_name, id]
+      `UPDATE cotton_picking cp
+       JOIN farmers f ON cp.farmer_id = f.id
+       SET cp.average = ?, cp.total = ?, cp.rate = ?, cp.total_earning = ?, cp.total_cost = ?, cp.buyer_name = ?
+       WHERE cp.id = ? AND f.facilitator_id = ?`,
+      [
+        average,
+        total,
+        rate,
+        total_earning,
+        total_cost,
+        buyer_name,
+        id,
+        facilitatorId,
+      ]
     );
 
     if (result.affectedRows === 0) {
       return res
         .status(404)
-        .json({ message: "Cotton picking record not found" });
+        .json({ message: "Cotton picking record not found or not yours" });
     }
 
     res
@@ -118,16 +144,20 @@ const updateCottonPicking = async (req, res) => {
 // Delete cotton picking record by ID
 const deleteCottonPicking = async (req, res) => {
   const { id } = req.params;
+  const facilitatorId = req.user.id;
 
   try {
-    const [result] = await db
-      .promise()
-      .query("DELETE FROM cotton_picking WHERE id = ?", [id]);
+    const [result] = await db.promise().query(
+      `DELETE cp FROM cotton_picking cp
+       JOIN farmers f ON cp.farmer_id = f.id
+       WHERE cp.id = ? AND f.facilitator_id = ?`,
+      [id, facilitatorId]
+    );
 
     if (result.affectedRows === 0) {
       return res
         .status(404)
-        .json({ message: "Cotton picking record not found" });
+        .json({ message: "Cotton picking record not found or not yours" });
     }
 
     res

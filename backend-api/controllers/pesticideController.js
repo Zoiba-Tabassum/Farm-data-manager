@@ -1,10 +1,25 @@
 import db from "../db/connection.js"; // Use ES module import
 
-// Add pesticide usage
+// Add pesticide usage (only for facilitator's own farmer)
 const addPesticideUsage = async (req, res) => {
   const { farmer_id, name, quantity_per_ltr, spray_date, type } = req.body;
+  const facilitator_id = req.user.id;
 
   try {
+    // Ensure farmer belongs to facilitator
+    const [farmerCheck] = await db
+      .promise()
+      .query("SELECT id FROM farmers WHERE id = ? AND facilitator_id = ?", [
+        farmer_id,
+        facilitator_id,
+      ]);
+
+    if (farmerCheck.length === 0) {
+      return res
+        .status(403)
+        .json({ error: "Unauthorized to add data for this farmer" });
+    }
+
     const query = `
       INSERT INTO pesticide_usage (farmer_id, name, quantity_per_ltr, spray_date, type)
       VALUES (?, ?, ?, ?, ?)
@@ -22,14 +37,19 @@ const addPesticideUsage = async (req, res) => {
   }
 };
 
-// Get pesticide usage for a specific farmer
+// Get pesticide usage for a specific farmer (facilitator restriction)
 const getPesticideUsage = async (req, res) => {
   const { farmer_id } = req.params;
+  const facilitator_id = req.user.id;
 
   try {
-    const [rows] = await db
-      .promise()
-      .query("SELECT * FROM pesticide_usage WHERE farmer_id = ?", [farmer_id]);
+    const [rows] = await db.promise().query(
+      `SELECT pu.* 
+       FROM pesticide_usage pu
+       JOIN farmers f ON pu.farmer_id = f.id
+       WHERE pu.farmer_id = ? AND f.facilitator_id = ?`,
+      [farmer_id, facilitator_id]
+    );
 
     if (rows.length === 0) {
       return res
@@ -44,10 +64,18 @@ const getPesticideUsage = async (req, res) => {
   }
 };
 
-// Get all pesticide usage data
+// Get all pesticide usage data for facilitator
 const getAllPesticideUsage = async (req, res) => {
+  const facilitator_id = req.user.id;
+
   try {
-    const [rows] = await db.promise().query("SELECT * FROM pesticide_usage");
+    const [rows] = await db.promise().query(
+      `SELECT pu.* 
+       FROM pesticide_usage pu
+       JOIN farmers f ON pu.farmer_id = f.id
+       WHERE f.facilitator_id = ?`,
+      [facilitator_id]
+    );
 
     if (rows.length === 0) {
       return res.status(404).json({ message: "No pesticide usage data found" });
@@ -60,12 +88,28 @@ const getAllPesticideUsage = async (req, res) => {
   }
 };
 
-// Update pesticide usage data by ID
+// Update pesticide usage data by ID (facilitator restriction)
 const updatePesticideUsage = async (req, res) => {
   const { id } = req.params;
   const { name, quantity_per_ltr, spray_date, type } = req.body;
+  const facilitator_id = req.user.id;
 
   try {
+    // Ensure the record belongs to a farmer of this facilitator
+    const [check] = await db.promise().query(
+      `SELECT pu.id 
+       FROM pesticide_usage pu
+       JOIN farmers f ON pu.farmer_id = f.id
+       WHERE pu.id = ? AND f.facilitator_id = ?`,
+      [id, facilitator_id]
+    );
+
+    if (check.length === 0) {
+      return res
+        .status(403)
+        .json({ error: "Unauthorized to update this record" });
+    }
+
     const [result] = await db.promise().query(
       `UPDATE pesticide_usage
        SET name = ?, quantity_per_ltr = ?, spray_date = ?, type = ?
@@ -88,11 +132,27 @@ const updatePesticideUsage = async (req, res) => {
   }
 };
 
-// Delete pesticide usage data by ID
+// Delete pesticide usage data by ID (facilitator restriction)
 const deletePesticideUsage = async (req, res) => {
   const { id } = req.params;
+  const facilitator_id = req.user.id;
 
   try {
+    // Ensure the record belongs to this facilitator
+    const [check] = await db.promise().query(
+      `SELECT pu.id 
+       FROM pesticide_usage pu
+       JOIN farmers f ON pu.farmer_id = f.id
+       WHERE pu.id = ? AND f.facilitator_id = ?`,
+      [id, facilitator_id]
+    );
+
+    if (check.length === 0) {
+      return res
+        .status(403)
+        .json({ error: "Unauthorized to delete this record" });
+    }
+
     const [result] = await db
       .promise()
       .query("DELETE FROM pesticide_usage WHERE id = ?", [id]);
@@ -118,4 +178,4 @@ export {
   getAllPesticideUsage,
   updatePesticideUsage,
   deletePesticideUsage,
-}; // Export all functions for use in routes
+};
