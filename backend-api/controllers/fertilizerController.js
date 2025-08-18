@@ -34,21 +34,30 @@ const addFertilizerData = async (req, res) => {
     res.status(500).json({ error: "Failed to add fertilizer data" });
   }
 };
-
 // Get fertilizer data for a specific farmer
 const getFertilizerData = async (req, res) => {
   const { farmer_id } = req.params;
-  const facilitator_id = req.user.id;
+  const user = req.user;
 
   try {
-    const ownsFarmer = await verifyFarmerOwnership(farmer_id, facilitator_id);
-    if (!ownsFarmer) {
-      return res.status(403).json({ error: "Unauthorized: Farmer not yours" });
+    let query, params;
+
+    if (user.role === "admin") {
+      // Admin can view any farmer's fertilizer data
+      query = "SELECT * FROM fertilizer_data WHERE farmer_id = ?";
+      params = [farmer_id];
+    } else {
+      // Facilitator restricted to own farmers
+      query = `
+        SELECT fd.*
+        FROM fertilizer_data fd
+        JOIN farmers f ON fd.farmer_id = f.id
+        WHERE fd.farmer_id = ? AND f.facilitator_id = ?
+      `;
+      params = [farmer_id, user.id];
     }
 
-    const [rows] = await db
-      .promise()
-      .query("SELECT * FROM fertilizer_data WHERE farmer_id = ?", [farmer_id]);
+    const [rows] = await db.promise().query(query, params);
 
     if (rows.length === 0) {
       return res.status(404).json({ message: "No fertilizer data found" });
@@ -61,18 +70,31 @@ const getFertilizerData = async (req, res) => {
   }
 };
 
-// Get all fertilizer data for this facilitator's farmers
+// Get all fertilizer data
 const getAllFertilizerData = async (req, res) => {
-  const facilitator_id = req.user.id;
+  const user = req.user;
 
   try {
-    const [rows] = await db.promise().query(
-      `SELECT fd.*
-       FROM fertilizer_data fd
-       JOIN farmers f ON fd.farmer_id = f.id
-       WHERE f.facilitator_id = ?`,
-      [facilitator_id]
-    );
+    let query, params;
+
+    if (user.role === "admin") {
+      query = `
+        SELECT fd.*, f.name as farmer_name, f.facilitator_id
+        FROM fertilizer_data fd
+        JOIN farmers f ON fd.farmer_id = f.id
+      `;
+      params = [];
+    } else {
+      query = `
+        SELECT fd.*, f.name as farmer_name
+        FROM fertilizer_data fd
+        JOIN farmers f ON fd.farmer_id = f.id
+        WHERE f.facilitator_id = ?
+      `;
+      params = [user.id];
+    }
+
+    const [rows] = await db.promise().query(query, params);
 
     if (rows.length === 0) {
       return res.status(404).json({ message: "No fertilizer data found" });

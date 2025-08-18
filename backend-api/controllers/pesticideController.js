@@ -37,45 +37,69 @@ const addPesticideUsage = async (req, res) => {
   }
 };
 
-// Get pesticide usage for a specific farmer (facilitator restriction)
+// Get pesticide usage for a specific farmer (Admin unrestricted, Facilitator restricted)
 const getPesticideUsage = async (req, res) => {
-  const { farmer_id } = req.params;
-  const facilitator_id = req.user.id;
+  const { id } = req.params;
+  const user = req.user;
 
   try {
-    const [rows] = await db.promise().query(
-      `SELECT pu.* 
-       FROM pesticide_usage pu
-       JOIN farmers f ON pu.farmer_id = f.id
-       WHERE pu.farmer_id = ? AND f.facilitator_id = ?`,
-      [farmer_id, facilitator_id]
-    );
+    let query, params;
+
+    if (user.role === "admin") {
+      // Admin can view any pesticide usage by record ID
+      query = "SELECT * FROM pesticide_usage WHERE id = ?";
+      params = [id];
+    } else {
+      // Facilitator: must own the farmer related to this record
+      query = `
+        SELECT pu.*
+        FROM pesticide_usage pu
+        JOIN farmers f ON pu.farmer_id = f.id
+        WHERE pu.id = ? AND f.facilitator_id = ?
+      `;
+      params = [id, user.id];
+    }
+
+    const [rows] = await db.promise().query(query, params);
 
     if (rows.length === 0) {
       return res
         .status(404)
-        .json({ message: "No pesticide usage data found for this farmer" });
+        .json({ message: "No pesticide usage record found" });
     }
 
-    res.status(200).json(rows);
+    res.status(200).json(rows[0]);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Failed to retrieve pesticide usage data" });
   }
 };
 
-// Get all pesticide usage data for facilitator
+// Get all pesticide usage data (Admin = all, Facilitator = own only)
 const getAllPesticideUsage = async (req, res) => {
-  const facilitator_id = req.user.id;
+  const user = req.user;
 
   try {
-    const [rows] = await db.promise().query(
-      `SELECT pu.* 
-       FROM pesticide_usage pu
-       JOIN farmers f ON pu.farmer_id = f.id
-       WHERE f.facilitator_id = ?`,
-      [facilitator_id]
-    );
+    let query, params;
+
+    if (user.role === "admin") {
+      query = `
+        SELECT pu.*, f.name as farmer_name, f.facilitator_id
+        FROM pesticide_usage pu
+        JOIN farmers f ON pu.farmer_id = f.id
+      `;
+      params = [];
+    } else {
+      query = `
+        SELECT pu.*, f.name as farmer_name
+        FROM pesticide_usage pu
+        JOIN farmers f ON pu.farmer_id = f.id
+        WHERE f.facilitator_id = ?
+      `;
+      params = [user.id];
+    }
+
+    const [rows] = await db.promise().query(query, params);
 
     if (rows.length === 0) {
       return res.status(404).json({ message: "No pesticide usage data found" });

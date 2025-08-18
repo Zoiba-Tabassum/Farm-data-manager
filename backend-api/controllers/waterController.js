@@ -51,24 +51,38 @@ const addWaterData = async (req, res) => {
   }
 };
 
-// Get water data for a specific farmer (facilitator restricted)
+// Get water data for a specific farmer
 const getWaterData = async (req, res) => {
   const { farmer_id } = req.params;
-  const facilitatorId = req.user.id;
+  const user = req.user;
 
   try {
-    const [rows] = await db.promise().query(
-      `SELECT wd.*
-       FROM water_data wd
-       JOIN farmers f ON wd.farmer_id = f.id
-       WHERE wd.farmer_id = ? AND f.facilitator_id = ?`,
-      [farmer_id, facilitatorId]
-    );
+    let query, params;
+
+    if (user.role === "admin") {
+      // Admin can view any farmer's water data
+      query = `
+        SELECT wd.*, f.name AS farmer_name, f.facilitator_id
+        FROM water_data wd
+        JOIN farmers f ON wd.farmer_id = f.id
+        WHERE wd.farmer_id = ?
+      `;
+      params = [farmer_id];
+    } else {
+      // Facilitator can only see their own farmers
+      query = `
+        SELECT wd.*, f.name AS farmer_name
+        FROM water_data wd
+        JOIN farmers f ON wd.farmer_id = f.id
+        WHERE wd.farmer_id = ? AND f.facilitator_id = ?
+      `;
+      params = [farmer_id, user.id];
+    }
+
+    const [rows] = await db.promise().query(query, params);
 
     if (rows.length === 0) {
-      return res
-        .status(404)
-        .json({ message: "No water data found for this farmer" });
+      return res.status(404).json({ message: "No water data found" });
     }
 
     res.status(200).json(rows);
@@ -78,18 +92,33 @@ const getWaterData = async (req, res) => {
   }
 };
 
-// Get all water data for this facilitator
+// Get all water data
 const getAllWaterData = async (req, res) => {
-  const facilitatorId = req.user.id;
+  const user = req.user;
 
   try {
-    const [rows] = await db.promise().query(
-      `SELECT wd.*
-       FROM water_data wd
-       JOIN farmers f ON wd.farmer_id = f.id
-       WHERE f.facilitator_id = ?`,
-      [facilitatorId]
-    );
+    let query, params;
+
+    if (user.role === "admin") {
+      // Admin sees all water data across all facilitators
+      query = `
+        SELECT wd.*, f.name AS farmer_name, f.facilitator_id
+        FROM water_data wd
+        JOIN farmers f ON wd.farmer_id = f.id
+      `;
+      params = [];
+    } else {
+      // Facilitator only their farmers' water data
+      query = `
+        SELECT wd.*, f.name AS farmer_name
+        FROM water_data wd
+        JOIN farmers f ON wd.farmer_id = f.id
+        WHERE f.facilitator_id = ?
+      `;
+      params = [user.id];
+    }
+
+    const [rows] = await db.promise().query(query, params);
 
     if (rows.length === 0) {
       return res.status(404).json({ message: "No water data found" });

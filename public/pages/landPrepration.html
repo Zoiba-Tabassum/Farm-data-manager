@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>DEHQAN - Farmers</title>
+    <title>DEHQAN - Land</title>
     <link href="../style.css" rel="stylesheet" />
     <link rel="icon" href="../img/favicon.ico" />
     <script src="https://cdn.tailwindcss.com"></script>
@@ -99,7 +99,9 @@
         <div
           class="flex flex-col sm:flex-row justify-between items-center mb-4 gap-2"
         >
-          <h1 class="text-xl sm:text-2xl font-bold text-[#2c6642]">Farmers</h1>
+          <h1 class="text-xl sm:text-2xl font-bold text-[#2c6642]">
+            Land Preparation
+          </h1>
           <div class="flex items-center gap-2 w-full sm:w-auto">
             <input
               type="text"
@@ -121,44 +123,41 @@
             <table
               class="w-full min-w-[600px] border-collapse border border-gray-300"
             >
-              <thead class="bg-[#dff5e4]">
+              <thead id="preprationTableHead" class="bg-[#dff5e4]">
                 <tr>
-                  <th class="border border-gray-300 px-2 sm:px-4 py-2">ID</th>
-                  <th class="border border-gray-300 px-2 sm:px-4 py-2">Name</th>
-                  <th class="border border-gray-300 px-2 sm:px-4 py-2">CNIC</th>
                   <th class="border border-gray-300 px-2 sm:px-4 py-2">
-                    Phone
+                    Farmer ID
                   </th>
                   <th class="border border-gray-300 px-2 sm:px-4 py-2">
-                    Village
+                    Factor
                   </th>
                   <th class="border border-gray-300 px-2 sm:px-4 py-2">
-                    Tehsil
+                    Cost Per Acre
                   </th>
+
                   <th
                     id="faciltatorId"
                     class="border border-gray-300 px-2 sm:px-4 py-2"
                   >
                     Facilitator ID
                   </th>
-                  <th class="border border-gray-300 px-2 sm:px-4 py-2">Code</th>
                 </tr>
               </thead>
-              <tbody id="farmersTableBody"></tbody>
+              <tbody id="preprationTableBody"></tbody>
             </table>
           </div>
           <div class="flex justify-end mt-3">
             <button
-              id="addFarmerBtn"
+              id="addPreprationBtn"
               class="border border-[#74b585] bg-white text-[#2c6642] px-3 sm:px-4 py-2 rounded-lg hover:bg-[#74b585] hover:text-white flex items-center gap-2"
             >
-              <i data-lucide="plus"></i> Add Farmer
+              <i data-lucide="plus"></i> Add
             </button>
           </div>
         </div>
       </main>
     </div>
-    <script src="../js/farmers.js"></script>
+    <script src="../js/land_prepration.js"></script>
     <script>
       lucide.createIcons();
     </script>

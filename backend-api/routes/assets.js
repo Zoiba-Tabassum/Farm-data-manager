@@ -1,4 +1,4 @@
-import express from "express"; // imports express framework for building web applications
+import express from "express";
 import authentication from "../middleware/auth.js";
 import {
   addAssets,
@@ -6,30 +6,33 @@ import {
   deleteAssets,
   updateAssets,
   getAllAssets,
-} from "../controllers/assetsController.js"; // Import asset controller functions
+} from "../controllers/assetsController.js";
 
-const router = express.Router(); // Create a new router instance
+const router = express.Router();
 
-// Route to add a new asset
-router.post("/add", authentication("field_facilitator"), addAssets); // Protected route, requires authentication
-router.get(
-  "/get/:farmer_id",
-  authentication("admin", "field_facilitator"),
-  getAssets
-);
-router.delete(
-  "/delete/:asset_id",
-  authentication("field_facilitator"),
-  deleteAssets
-);
+// Facilitator only
+router.post("/add", authentication("field_facilitator"), addAssets);
 router.put(
   "/update/:farmer_id",
   authentication("field_facilitator"),
   updateAssets
+);
+router.delete(
+  "/delete/:farmer_id",
+  authentication("field_facilitator"),
+  deleteAssets
+);
+
+// Admin + Facilitator
+router.get(
+  "/get/:farmer_id",
+  authentication("admin", "field_facilitator"),
+  getAssets
 );
 router.get(
   "/getall",
   authentication("admin", "field_facilitator"),
   getAllAssets
 );
+
 export default router;

@@ -234,7 +234,7 @@ function renderFacilitatorCharts(data) {
         {
           label: "Area (acres)",
           data: areaPerFarmer.map((item) => item.area),
-          backgroundColor: "#166534",
+          backgroundColor: "#3f9627",
         },
       ],
     },
@@ -242,18 +242,38 @@ function renderFacilitatorCharts(data) {
   });
 
   new Chart(document.getElementById("livestockBarChart"), {
-    type: "bar",
+    type: "pie",
     data: {
       labels: livestockDistribution.map((item) => item.animal_type),
       datasets: [
         {
           label: "Quantity",
           data: livestockDistribution.map((item) => item.total_quantity),
-          backgroundColor: "#34d399",
+          backgroundColor: [
+            "#34d399", // green
+            "#60a5fa", // blue
+            "#fbbf24", // yellow
+            "#f87171", // red
+            "#a78bfa", // purple
+            "#f472b6", // pink
+          ],
+          borderWidth: 1,
         },
       ],
     },
-    options: chartOptions,
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: "right", // legend on right side
+          labels: { boxWidth: 15 },
+        },
+      },
+      layout: {
+        padding: 20, // keeps chart centered
+      },
+    },
   });
 
   new Chart(document.getElementById("irrigationLineChart"), {

@@ -41,25 +41,38 @@ const addSeedData = async (req, res) => {
     res.status(500).json({ error: "Failed to add seed data" });
   }
 };
-
-// Get seed data for a specific farmer (facilitator restricted)
+// Get seed data for a specific farmer
 const getSeedData = async (req, res) => {
   const { farmer_id } = req.params;
-  const facilitatorId = req.user.id;
+  const user = req.user;
 
   try {
-    const [rows] = await db.promise().query(
-      `SELECT sd.*
-       FROM seed_data sd
-       JOIN farmers f ON sd.farmer_id = f.id
-       WHERE sd.farmer_id = ? AND f.facilitator_id = ?`,
-      [farmer_id, facilitatorId]
-    );
+    let query, params;
+
+    if (user.role === "admin") {
+      // Admin can view any farmer's seed data
+      query = `
+        SELECT sd.*, f.name AS farmer_name, f.facilitator_id
+        FROM seed_data sd
+        JOIN farmers f ON sd.farmer_id = f.id
+        WHERE sd.farmer_id = ?
+      `;
+      params = [farmer_id];
+    } else {
+      // Facilitator can only view their farmers' data
+      query = `
+        SELECT sd.*, f.name AS farmer_name
+        FROM seed_data sd
+        JOIN farmers f ON sd.farmer_id = f.id
+        WHERE sd.farmer_id = ? AND f.facilitator_id = ?
+      `;
+      params = [farmer_id, user.id];
+    }
+
+    const [rows] = await db.promise().query(query, params);
 
     if (rows.length === 0) {
-      return res
-        .status(404)
-        .json({ message: "No seed data found for this farmer" });
+      return res.status(404).json({ message: "No seed data found" });
     }
 
     res.status(200).json(rows);
@@ -69,18 +82,33 @@ const getSeedData = async (req, res) => {
   }
 };
 
-// Get all seed data for facilitator
+// Get all seed data
 const getAllSeedData = async (req, res) => {
-  const facilitatorId = req.user.id;
+  const user = req.user;
 
   try {
-    const [rows] = await db.promise().query(
-      `SELECT sd.*
-       FROM seed_data sd
-       JOIN farmers f ON sd.farmer_id = f.id
-       WHERE f.facilitator_id = ?`,
-      [facilitatorId]
-    );
+    let query, params;
+
+    if (user.role === "admin") {
+      // Admin gets everything
+      query = `
+        SELECT sd.*, f.name AS farmer_name, f.facilitator_id
+        FROM seed_data sd
+        JOIN farmers f ON sd.farmer_id = f.id
+      `;
+      params = [];
+    } else {
+      // Facilitator only their farmers
+      query = `
+        SELECT sd.*, f.name AS farmer_name
+        FROM seed_data sd
+        JOIN farmers f ON sd.farmer_id = f.id
+        WHERE f.facilitator_id = ?
+      `;
+      params = [user.id];
+    }
+
+    const [rows] = await db.promise().query(query, params);
 
     if (rows.length === 0) {
       return res.status(404).json({ message: "No seed data found" });

@@ -11,7 +11,7 @@ const router = express.Router(); // creates a new router instance
 router.post("/addseeddata", authentication("field_facilitator"), addSeedData); // route to add seed data, protected by authentication
 router.get(
   "/getseeddata/:farmer_id",
-  authentication(["admin", "field_facilitator"]),
+  authentication("admin", "field_facilitator"),
   getSeedData
 ); // route to get seed data by farmer_id, protected by authentication
 router.delete(

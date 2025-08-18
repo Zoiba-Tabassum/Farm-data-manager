@@ -37,16 +37,25 @@ const addLandPreparation = async (req, res) => {
 
 // Get all land preparation records for this facilitator
 const getAllLandPreparation = async (req, res) => {
-  const facilitatorId = req.user.id;
+  const user = req.user;
 
   try {
-    const [rows] = await db.promise().query(
-      `SELECT lp.* 
-       FROM land_preparation lp
-       JOIN farmers f ON lp.farmer_id = f.id
-       WHERE f.facilitator_id = ?`,
-      [facilitatorId]
-    );
+    let query, params;
+
+    if (user.role === "admin") {
+      query = `SELECT lp.*, f.name as farmer_name, f.facilitator_id
+               FROM land_preparation lp
+               JOIN farmers f ON lp.farmer_id = f.id`;
+      params = [];
+    } else {
+      query = `SELECT lp.*, f.name as farmer_name
+               FROM land_preparation lp
+               JOIN farmers f ON lp.farmer_id = f.id
+               WHERE f.facilitator_id = ?`;
+      params = [user.id];
+    }
+
+    const [rows] = await db.promise().query(query, params);
 
     if (rows.length === 0) {
       return res
@@ -64,16 +73,25 @@ const getAllLandPreparation = async (req, res) => {
 // Get land preparation records by farmer_id (facilitator restricted)
 const getLandPreparation = async (req, res) => {
   const { farmer_id } = req.params;
-  const facilitatorId = req.user.id;
+  const user = req.user;
 
   try {
-    const [rows] = await db.promise().query(
-      `SELECT lp.* 
-       FROM land_preparation lp
-       JOIN farmers f ON lp.farmer_id = f.id
-       WHERE lp.farmer_id = ? AND f.facilitator_id = ?`,
-      [farmer_id, facilitatorId]
-    );
+    let query, params;
+
+    if (user.role === "admin") {
+      query = `SELECT lp.* 
+               FROM land_preparation lp
+               WHERE lp.farmer_id = ?`;
+      params = [farmer_id];
+    } else {
+      query = `SELECT lp.* 
+               FROM land_preparation lp
+               JOIN farmers f ON lp.farmer_id = f.id
+               WHERE lp.farmer_id = ? AND f.facilitator_id = ?`;
+      params = [farmer_id, user.id];
+    }
+
+    const [rows] = await db.promise().query(query, params);
 
     if (rows.length === 0) {
       return res

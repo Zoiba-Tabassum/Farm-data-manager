@@ -8,17 +8,18 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+
   </head>
   <body
-    class="min-h-screen flex justify-center items-start bg-gradient-to-br from-[#74b585] via-[#f9f9f9] to-[#74b585] p-4"
+    class="min-h-screen flex justify-center items-start bg-[#dff5e4] p-4"
   >
     <div
-      class="flex flex-col md:flex-row w-full max-w-7xl rounded-2xl shadow-xl bg-white/10 backdrop-blur-lg border border-white/30 overflow-hidden"
+  class="flex flex-col md:flex-row w-full max-w-7xl rounded-2xl shadow-xl bg-white/10 backdrop-blur-lg border border-white/30 overflow-hidden items-stretch"
     >
       <!-- Sidebar -->
       <aside
         id="sidebar"
-  class="w-full md:w-64 bg-[#2c6642]/90 text-white p-6 md:sticky md:top-0 h-full min-h-screen md:block hidden z-20"
+  class="w-full md:w-64 bg-[#2c6642]/90 text-white p-6 md:sticky md:top-0 max-h-full  md:block hidden z-20"
       >
         <div class="flex flex-col items-center justify-center mb-10 space-y-4">
           <img
@@ -28,62 +29,60 @@
           />
           <nav class="flex flex-col space-y-3 w-full text-center p-4">
             <a
-              href="#" data-section="farmers"
+              href="./pages/farmers.html" data-section="farmers"
               class="flex items-center gap-2 text-white hover:text-[#74b585] font-semibold p-2"
               ><i data-lucide="users"></i>Farmers</a
             >
             <a
-              href="#" data-section="assets"
+              href="./pages/assets.html" data-section="assets"
               class="flex items-center gap-2 text-white hover:text-[#74b585] font-semibold p-2"
               ><i data-lucide="package"></i>Assets</a
             >
             <a
-              href="#" data-section="land-preparation"
+              href="./pages/landPrepration.html" data-section="land-preparation"
               class="flex items-center gap-2 text-white hover:text-[#74b585] font-semibold p-2"
               ><i data-lucide="tractor"></i> Land Preparation</a
             >
             <a
-              href="#" data-section="irrigation"
+              href="./pages/seed.html" data-section="seed-data"
               class="flex items-center gap-2 text-white hover:text-[#74b585] font-semibold p-2"
             >
               <i data-lucide="sprout"></i>Seed Data</a
             >
             <a
-              href="#" data-section="water-usage"
+              href="./pages/water.html" data-section="water-usage"
               class="flex items-center gap-2 text-white hover:text-[#74b585] font-semibold p-2"
             >
               <i data-lucide="droplet"></i>Water Usage</a
             >
             <a
-              href="#" data-section="pesticide"
+              href="./pages/pesticide.html" data-section="pesticide"
               class="flex items-center gap-2 text-white hover:text-[#74b585] font-semibold p-2"
               ><i data-lucide="bug-off"></i>Pesticide</a
             >
             <a
-              href="#"
+              href="./pages/fertilizer.html" data-section="fertilizer"
               class="flex items-center gap-2 text-white hover:text-[#74b585] font-semibold p-2"
             >
               <i data-lucide="flask-round"></i>Fertilizer</a
             >
             <a
-              href="#" data-section="cotton-picking"
+              href="./pages/cotton.html" data-section="cotton-picking"
               class="flex items-center gap-2 text-white hover:text-[#74b585] font-semibold p-2"
               ><i data-lucide="crop"></i>Cotton Picking</a
             >
+             <a
+              href="./pages/records.html"
+              data-section="cotton-picking"
+              class="flex items-center gap-2 text-white hover:text-[#74b585] font-semibold p-2 pt-10"
+            >
+              <i data-lucide="crop"></i>Records</a>
           </nav>
           <!-- Close button on mobile -->
-          <button
-            class="md:hidden text-white text-2xl"
-            onclick="toggleSidebar()"
-          >
-            ✖
-          </button>
+         
         </div>
         <nav class="space-y-4">
-          <a href="#" class="block hover:text-yellow-300 hidden"
-            >Manage Farmers</a
-          >
-          <a href="#" class="block hover:text-yellow-300 hidden">Weather</a>
+         
           <button
             onclick="logout()"
             class="mt-6 w-full border border-white py-2 px-3 rounded hover:bg-[#74b585] hover:text-[#2c6642] transition font-medium"
@@ -95,12 +94,7 @@
       <!-- Main Content -->
       <main class="flex-1 p-6 space-y-6">
         <!-- Mobile Toggle Button -->
-        <button
-          class="md:hidden mb-4 px-4 py-2 bg-[#2c6642] text-white rounded"
-          onclick="toggleSidebar()"
-        >
-          ☰ Menu
-        </button>
+      
         <!-- Header -->
         <header class="flex justify-between items-center">
           <h1 class="text-2xl font-bold text-[#2c6642]">Dashboard</h1>
@@ -245,10 +239,10 @@
           <div
             class="bg-white/40 backdrop-blur-lg rounded-xl shadow p-6 border border-white/20"
           >
-            <h3 class="text-lg font-semibold text-[#2c6642] mb-3">
+            <h3 class="absolute top-6 text-lg font-semibold text-[#2c6642] ">
               Livestock Distribution
             </h3>
-            <div class="h-64"><canvas id="livestockBarChart"></canvas></div>
+            <div class="h-85 w-85 flex items-center justiy-center p-2"><canvas id="livestockBarChart"></canvas></div>
           </div>
           <div class="md:col-span-2 grid grid-cols-4 gap-4">
   <!-- Chart (75%) -->

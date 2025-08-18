@@ -30,36 +30,38 @@ const addAssets = async (req, res) => {
     const connection = await db.promise().getConnection();
     await connection.beginTransaction();
 
-    const farmQuery = `
-      INSERT INTO farm_data (farmer_id, area_acres, soil_type, irrigation_type)
-      VALUES (?, ?, ?, ?)
-      ON DUPLICATE KEY UPDATE
-        area_acres = VALUES(area_acres),
-        soil_type = VALUES(soil_type),
-        irrigation_type = VALUES(irrigation_type)
-    `;
-    await connection.query(farmQuery, [
-      farmer_id,
-      area_acres,
-      soil_type,
-      irrigation_type,
-    ]);
+    // 1️⃣ Check if farm_data already exists
+    const [existingFarm] = await connection.query(
+      "SELECT id FROM farm_data WHERE farmer_id = ?",
+      [farmer_id]
+    );
 
-    if (Array.isArray(livestock)) {
+    if (existingFarm.length === 0) {
+      // 2️⃣ Insert farm_data if not exists
+      await connection.query(
+        `INSERT INTO farm_data (farmer_id, area_acres, soil_type, irrigation_type)
+         VALUES (?, ?, ?, ?)`,
+        [farmer_id, area_acres, soil_type, irrigation_type]
+      );
+    }
+    // else → skip farm insert/update, only livestock will be added
+
+    // 3️⃣ Insert livestock if provided
+    if (Array.isArray(livestock) && livestock.length > 0) {
       for (const animal of livestock) {
-        const livestockQuery = `
-          INSERT INTO livestock (farmer_id, animal_type, quantity, shelter, clean_water, trained, vaccinated)
-          VALUES (?, ?, ?, ?, ?, ?, ?)
-        `;
-        await connection.query(livestockQuery, [
-          farmer_id,
-          animal.animal_type,
-          animal.quantity,
-          animal.shelter,
-          animal.clean_water,
-          animal.trained,
-          animal.vaccinated,
-        ]);
+        await connection.query(
+          `INSERT INTO livestock (farmer_id, animal_type, quantity, shelter, clean_water, trained, vaccinated)
+           VALUES (?, ?, ?, ?, ?, ?, ?)`,
+          [
+            farmer_id,
+            animal.animal_type,
+            animal.quantity,
+            animal.shelter || 0,
+            animal.clean_water || 0,
+            animal.trained || 0,
+            animal.vaccinated || 0,
+          ]
+        );
       }
     }
 

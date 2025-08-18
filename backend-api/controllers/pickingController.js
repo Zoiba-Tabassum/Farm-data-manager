@@ -45,18 +45,35 @@ const addCottonPicking = async (req, res) => {
 };
 
 // Get cotton picking records for a specific farmer
+// Get cotton picking records for a specific farmer
 const getCottonPicking = async (req, res) => {
   const { farmer_id } = req.params;
-  const facilitatorId = req.user.id;
+  const user = req.user;
 
   try {
-    const [rows] = await db.promise().query(
-      `SELECT cp.* 
-       FROM cotton_picking cp
-       JOIN farmers f ON cp.farmer_id = f.id
-       WHERE cp.farmer_id = ? AND f.facilitator_id = ?`,
-      [farmer_id, facilitatorId]
-    );
+    let query, params;
+
+    if (user.role === "admin") {
+      // Admin can see any farmer's cotton picking records
+      query = `
+        SELECT cp.*, f.name as farmer_name, f.facilitator_id
+        FROM cotton_picking cp
+        JOIN farmers f ON cp.farmer_id = f.id
+        WHERE cp.farmer_id = ?
+      `;
+      params = [farmer_id];
+    } else {
+      // Facilitator restricted to own farmers
+      query = `
+        SELECT cp.*, f.name as farmer_name
+        FROM cotton_picking cp
+        JOIN farmers f ON cp.farmer_id = f.id
+        WHERE cp.farmer_id = ? AND f.facilitator_id = ?
+      `;
+      params = [farmer_id, user.id];
+    }
+
+    const [rows] = await db.promise().query(query, params);
 
     if (rows.length === 0) {
       return res
@@ -73,18 +90,33 @@ const getCottonPicking = async (req, res) => {
   }
 };
 
-// Get all cotton picking records for this facilitator
+// Get all cotton picking records
 const getAllCottonPicking = async (req, res) => {
-  const facilitatorId = req.user.id;
+  const user = req.user;
 
   try {
-    const [rows] = await db.promise().query(
-      `SELECT cp.* 
-       FROM cotton_picking cp
-       JOIN farmers f ON cp.farmer_id = f.id
-       WHERE f.facilitator_id = ?`,
-      [facilitatorId]
-    );
+    let query, params;
+
+    if (user.role === "admin") {
+      // Admin gets all farmers' data
+      query = `
+        SELECT cp.*, f.name as farmer_name, f.facilitator_id
+        FROM cotton_picking cp
+        JOIN farmers f ON cp.farmer_id = f.id
+      `;
+      params = [];
+    } else {
+      // Facilitator gets only their farmers
+      query = `
+        SELECT cp.*, f.name as farmer_name
+        FROM cotton_picking cp
+        JOIN farmers f ON cp.farmer_id = f.id
+        WHERE f.facilitator_id = ?
+      `;
+      params = [user.id];
+    }
+
+    const [rows] = await db.promise().query(query, params);
 
     if (rows.length === 0) {
       return res

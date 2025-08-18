@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>DEHQAN - Assets</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="../style.css" rel="stylesheet" />
+    <link rel="icon" href="../img/favicon.ico" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+  </head>
+  <body
+    class="min-h-screen flex justify-center items-start bg-[#dff5e4] p-2 sm:p-4"
+  >
+    <div
+      class="flex flex-col md:flex-row w-full max-w-7xl rounded-2xl shadow-xl bg-white/10 backdrop-blur-lg border border-white/30 overflow-hidden items-stretch"
+    >
+      <!-- Sidebar -->
+      <aside
+        id="sidebar"
+        class="w-full md:w-64 bg-[#2c6642]/90 text-white p-6 md:sticky md:top-0 min-h-screen hidden md:block z-20"
+      >
+        <div class="flex flex-col items-center justify-center mb-10 space-y-4">
+          <img
+            src="../img/logo.png"
+            alt="Dehqan Logo"
+            class="brightness-150 w-28 md:w-36 shadow-sm"
+          />
+          <nav
+            class="flex flex-col space-y-3 w-full text-center p-2 md:p-4"
+            aria-label="Sidebar Navigation"
+          >
+            <a
+              href="../dashboard.html"
+              data-section="farmers"
+              class="flex items-center gap-2 text-white hover:text-[#74b585] font-semibold p-2"
+            >
+              <i data-lucide="layout-dashboard"></i>Dashboard</a
+            >
+            <a
+              href="../pages/farmers.html"
+              data-section="farmers"
+              class="flex items-center gap-2 text-white hover:text-[#74b585] font-medium p-2"
+            >
+              <i data-lucide="users"></i>Farmers
+            </a>
+            <a
+              href="../pages/assets.html"
+              data-section="assets"
+              class="flex items-center gap-2 text-[#74b585] font-semibold p-2 bg-white/20 rounded-lg"
+            >
+              <i data-lucide="package"></i>Assets
+            </a>
+            <a
+              href="../pages/landPrepration.html"
+              data-section="land-preparation"
+              class="flex items-center gap-2 text-white hover:text-[#74b585] font-medium p-2"
+            >
+              <i data-lucide="tractor"></i>Land Preparation
+            </a>
+            <a
+              href="../pages/seed.html"
+              data-section="seed"
+              class="flex items-center gap-2 text-white hover:text-[#74b585] font-medium p-2"
+            >
+              <i data-lucide="sprout"></i>Seed Data
+            </a>
+            <a
+              href="../pages/water.html"
+              data-section="water-usage"
+              class="flex items-center gap-2 text-white hover:text-[#74b585] font-medium p-2"
+            >
+              <i data-lucide="droplet"></i>Water Usage
+            </a>
+            <a
+              href="../pages/pesticide.html"
+              data-section="pesticide"
+              class="flex items-center gap-2 text-white hover:text-[#74b585] font-medium p-2"
+            >
+              <i data-lucide="bug-off"></i>Pesticide
+            </a>
+            <a
+              href="../pages/fertilizer.html"
+              data-section="fertilizer"
+              class="flex items-center gap-2 text-white hover:text-[#74b585] font-medium p-2"
+            >
+              <i data-lucide="flask-round"></i>Fertilizer
+            </a>
+            <a
+              href="../pages/records.html"
+              data-section="cotton-picking"
+              class="flex items-center gap-2 text-white hover:text-[#74b585] font-medium p-2 pt-6"
+            >
+              <i data-lucide="crop"></i>Records
+            </a>
+          </nav>
+        </div>
+      </aside>
+
+      <!-- Main Content -->
+      <main class="flex-1 p-4 sm:p-6 overflow-y-auto">
+        <!-- Page Header -->
+        <div
+          class="flex flex-col sm:flex-row justify-between items-center mb-4 gap-2"
+        >
+          <h1 class="text-xl sm:text-2xl font-bold text-[#2c6642]">
+            Assets Management
+          </h1>
+          <div class="flex items-center gap-2 w-full sm:w-auto">
+            <input
+              type="text"
+              id="searchCodeInput"
+              placeholder="Search by Farmer ID"
+              aria-label="Search by Farmer ID"
+              class="flex-1 sm:flex-none border border-gray-300 rounded-lg px-3 py-2 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-[#74b585]"
+            />
+            <button
+              id="searchFarmerBtn"
+              class="text-[#2c6642] px-3 py-2 rounded-lg hover:text-[#74b585] flex items-center gap-1 sm:gap-2"
+              aria-label="Search"
+            >
+              <i data-lucide="search"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Table -->
+        <div class="bg-white rounded-lg shadow-md p-2 sm:p-4">
+          <div class="overflow-x-auto">
+            <table
+              class="w-full min-w-[900px] border border-gray-200 text-sm sm:text-base"
+            >
+              <thead class="bg-[#dff5e4] text-[#2c6642]">
+                <tr>
+                  <th class="border border-gray-300 px-3 py-2 text-left">
+                    Farmer ID
+                  </th>
+                  <th class="border border-gray-300 px-3 py-2 text-left">
+                    Area (Acres)
+                  </th>
+                  <th class="border border-gray-300 px-3 py-2 text-left">
+                    Soil Type
+                  </th>
+                  <th class="border border-gray-300 px-3 py-2 text-left">
+                    Irrigation
+                  </th>
+                  <th class="border border-gray-300 px-3 py-2 text-left">
+                    Animal
+                  </th>
+                  <th class="border border-gray-300 px-3 py-2 text-left">
+                    Count
+                  </th>
+                  <th class="border border-gray-300 px-3 py-2 text-center">
+                    Shelter
+                  </th>
+                  <th class="border border-gray-300 px-3 py-2 text-center">
+                    Water
+                  </th>
+                  <th class="border border-gray-300 px-3 py-2 text-center">
+                    Trained
+                  </th>
+                  <th class="border border-gray-300 px-3 py-2 text-center">
+                    Vaccinated
+                  </th>
+                  <th class="border border-gray-300 px-3 py-2 text-center">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody id="assetsTableBody" class="divide-y divide-gray-200">
+                <!-- Rows injected via JS -->
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Add Button -->
+          <div class="flex justify-end mt-4">
+            <button
+              id="addFarmerBtn"
+              class="border border-[#74b585] bg-white text-[#2c6642] px-4 py-2 rounded-lg hover:bg-[#74b585] hover:text-white flex items-center gap-2 transition-colors"
+            >
+              <i data-lucide="plus"></i> Add Assets
+            </button>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Modal -->
+    <div
+      id="assetModal"
+      class="fixed inset-0 hidden items-center justify-center bg-black/40 z-30"
+      aria-hidden="true"
+    >
+      <div class="bg-white w-full max-w-3xl rounded-2xl shadow-xl p-4 sm:p-6">
+        <div class="flex items-center justify-between mb-4">
+          <h2 id="modalTitle" class="text-xl font-semibold text-[#2c6642]">
+            Add Assets
+          </h2>
+          <button id="closeModalBtn" class="text-gray-500 hover:text-gray-700">
+            <i data-lucide="x"></i>
+          </button>
+        </div>
+
+        <!-- Form -->
+        <div class="space-y-4">
+          <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+            <div class="sm:col-span-1">
+              <label class="block text-sm font-medium text-gray-700 mb-1"
+                >Farmer ID</label
+              >
+              <input
+                id="f_farmer_id"
+                type="number"
+                class="w-full border rounded-lg px-3 py-2"
+                placeholder="e.g. 1"
+              />
+              <p id="farmerHint" class="text-xs text-gray-500 mt-1">
+                Enter ID and blur to auto-fill if exists.
+              </p>
+            </div>
+            <div class="sm:col-span-1">
+              <label class="block text-sm font-medium text-gray-700 mb-1"
+                >Area (Acres)</label
+              >
+              <input
+                id="f_area"
+                type="number"
+                step="0.01"
+                class="w-full border rounded-lg px-3 py-2"
+              />
+            </div>
+            <div class="sm:col-span-1">
+              <label class="block text-sm font-medium text-gray-700 mb-1"
+                >Soil Type</label
+              >
+              <input
+                id="f_soil"
+                type="text"
+                class="w-full border rounded-lg px-3 py-2"
+              />
+            </div>
+            <div class="sm:col-span-1">
+              <label class="block text-sm font-medium text-gray-700 mb-1"
+                >Irrigation</label
+              >
+              <input
+                id="f_irrigation"
+                type="text"
+                class="w-full border rounded-lg px-3 py-2"
+              />
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between">
+            <h3 class="text-lg font-medium text-[#2c6642]">Livestock</h3>
+            <button
+              id="addAnimalRowBtn"
+              class="flex items-center gap-2 text-[#2c6642] hover:text-[#74b585]"
+            >
+              <i data-lucide="plus-circle"></i> Add Animal
+            </button>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full min-w-[800px] border border-gray-200 text-sm">
+              <thead class="bg-[#dff5e4] text-[#2c6642]">
+                <tr>
+                  <th class="border px-3 py-2 text-left">Animal</th>
+                  <th class="border px-3 py-2 text-left">Count</th>
+                  <th class="border px-3 py-2 text-center">Shelter</th>
+                  <th class="border px-3 py-2 text-center">Water</th>
+                  <th class="border px-3 py-2 text-center">Trained</th>
+                  <th class="border px-3 py-2 text-center">Vaccinated</th>
+                  <th class="border px-3 py-2 text-center">Remove</th>
+                </tr>
+              </thead>
+              <tbody id="livestockTbody"></tbody>
+            </table>
+          </div>
+
+          <div class="flex justify-end gap-3 pt-2">
+            <button
+              id="saveModalBtn"
+              class="bg-[#2c6642] text-white px-5 py-2 rounded-lg hover:bg-[#245538]"
+            >
+              Save
+            </button>
+            <button
+              id="cancelModalBtn"
+              class="border border-gray-300 px-5 py-2 rounded-lg hover:bg-gray-50"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="../js/assets.js"></script>
+    <script>
+      lucide.createIcons();
+    </script>
+  </body>
+</html>
