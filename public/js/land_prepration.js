@@ -86,6 +86,11 @@ function renderTable(rows) {
             }
           </div>
         </td>
+         ${
+           role === "admin"
+             ? `<td class="border px-2 py-2">${row.facilitator_id || "-"}</td>`
+             : ""
+         }
       `;
 
     tableBody.appendChild(tr);

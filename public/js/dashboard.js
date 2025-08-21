@@ -3,6 +3,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const role = localStorage.getItem("role");
 
   // ===== ADMIN CARDS =====
+  if (role === "admin") {
+    document.getElementById("user").classList.remove("hidden");
+  }
   const adminFacilitatorCount = document.getElementById(
     "adminFacilitatorCount"
   );

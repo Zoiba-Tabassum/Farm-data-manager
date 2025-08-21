@@ -5,6 +5,9 @@ document.addEventListener("DOMContentLoaded", () => {
   if (!token) {
     console.error("No token found in localStorage");
   }
+  if (role === "admin") {
+    document.getElementById("action").classList.add("hidden");
+  }
 
   // ===== Helpers =====
   const api = async (url, options = {}) => {
@@ -163,7 +166,7 @@ document.addEventListener("DOMContentLoaded", () => {
               <td class="border px-3 py-2">${farm.soil_type || "-"}</td>
               <td class="border px-3 py-2">${farm.irrigation_type || "-"}</td>
               <td class="border px-3 py-2" colspan="5">No livestock</td>
-              <td class="border px-3 py-2 text-center">
+              <td  class="border px-3 py-2 text-center">
                 ${
                   role === "field_facilitator"
                     ? actionButtons(farm.farmer_id)
@@ -211,19 +214,20 @@ document.addEventListener("DOMContentLoaded", () => {
                 }</td>
                 ${
                   i === 0
-                    ? `<td class="border px-3 py-2 text-center" rowspan="${
+                    ? `<td id="act" class="border px-3 py-2 text-center" rowspan="${
                         animals.length
                       }">
                         ${
                           role === "field_facilitator"
                             ? actionButtons(farm.farmer_id)
-                            : "-"
+                            : ""
                         }
                        </td>`
                     : ""
                 }
               </tr>
             `;
+
             tbody.insertAdjacentHTML("beforeend", row);
           });
         }

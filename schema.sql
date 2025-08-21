@@ -121,3 +121,9 @@ CREATE TABLE cotton_picking (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (farmer_id) REFERENCES farmers(id)
 );
+
+
+alter table users add user_name varchar (100) unique not null;
+
+ALTER TABLE farmers
+ADD COLUMN code VARCHAR(50) UNIQUE NOT NULL;
